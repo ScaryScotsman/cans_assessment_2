@@ -1,6 +1,5 @@
-import os
-import socket
 import common
+import socket
 import sys
 
 # Creating socket
@@ -13,41 +12,47 @@ srv_sock.bind(("", int(sys.argv[1])))
 srv_sock.listen(5)
 
 while True:
-    # Block until new incoming connection request
-    # Return new socket connection to client and client address
-    cli_sock, cli_addr = srv_sock.accept()
+    try:
+        # Block until new incoming connection request
+        # Return new socket connection to client and client address
+        cli_sock, cli_address = srv_sock.accept()
+        responseMessage = str(cli_address)
 
-    # Receive the request
-    request = cli_sock.recv(1024)
-    requestStr = request.decode('utf-8').split(' ')
-    requestType = requestStr[0]
-    requestFileName = requestStr[1]
+        # Receive the request
+        request = cli_sock.recv(1024)
+        requestStr = request.decode('utf-8').split(' ')
+        requestType = requestStr[0].lower()
+        requestFileName = requestStr[1]
 
-    serverFilePath = 'server_data/'
-    clientFilePath = 'client_data/'
+        serverFilePath = 'server_data/'
+        clientFilePath = 'client_data/'
 
-    # Processing the request
-    if requestType == "PUT":
-        clientFilePath += requestFileName
-        requestFileData = common.readFile(cli_addr, clientFilePath)
+        # Processing the request
+        if requestType == "put":
+            clientFilePath += requestFileName
+            requestFileData = common.readFile(responseMessage, clientFilePath)
 
-        serverFilePath += requestFileName
-        common.writeFile(cli_addr, serverFilePath, requestFileData)
+            if requestFileData is not None:
+                serverFilePath += requestFileName
+                common.writeFile(responseMessage, serverFilePath, requestFileData)
 
-    elif requestType == "GET":
-        serverFilePath += requestFileName
-        serverFileData = common.readFile(cli_addr, serverFilePath)
+        elif requestType == "get":
+            serverFilePath += requestFileName
+            serverFileData = common.readFile(responseMessage, serverFilePath)
 
-        clientFilePath += requestFileName
-        common.writeFile(cli_addr, clientFilePath, serverFileData)
+            if serverFileData is not None:
+                clientFilePath += requestFileName
+                common.writeFile(responseMessage, clientFilePath, serverFileData)
 
-    elif requestType == "LIST":
-        for entity in os.listdir():
-            print(entity)
+        elif requestType == "list":
+            common.listDirectoryContents(responseMessage)
 
-    else:
-        print("Server can't deal with this request")
+        else:
+            print("Server can't deal with this request. \n")
 
-# Closing the socket connection
-cli_sock.close()
+        # Closing the socket connection
+        cli_sock.close()
+    except KeyboardInterrupt:
+        break
+
 
