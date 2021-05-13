@@ -1,5 +1,4 @@
-def writeFile(addr, filepath, fileData):
-    responseMessage = str(addr)
+import os
 
 
 def writeFile(responseMessage, filepath, fileData):
@@ -30,3 +29,12 @@ def readFile(responseMessage, requestFilePath):
         responseMessage += ": FAILURE - something has gone wrong. \n " + str(e)
     finally:
         print(responseMessage)
+
+
+def listDirectoryContents(responseMessage):
+    print(responseMessage + ": Listing 1st-level directory contents. \n")
+
+    for entity in os.listdir():
+        print(entity)
+
+    print(responseMessage + ": Finished listing directory contents. \n")
